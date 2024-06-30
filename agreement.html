@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Agreement</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin: 0 auto;
+            width: 90%;
+            border: 1px solid #000;
+            padding: 20px;
+        }
+        .content h2 {
+            text-align: center;
+        }
+        .customer-info, .vehicle-info, .payment-info {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #000;
+            border-radius: 5px;
+        }
+        .details {
+            padding: 20px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .info-item {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <br>
+    <br>
+    <br>
+    <div class="header">
+        <h1>Payment Agreement</h1>
+    <br>
+    <br>
+    </div>
+    <div class="content">
+        <div class="customer-info">
+            <div class="section-title">Customer Information</div>
+            <div class="info-item"><strong>Name:</strong> {{ customer.first_name }} {{ customer.last_name }}</div>
+            <div class="info-item"><strong>Email:</strong> {{ customer.email }}</div>
+            <div class="info-item"><strong>Phone:</strong> {{ customer.phone }}</div>
+            <div class="info-item"><strong>Address:</strong> {{ customer.address }}, {{ customer.city }}, {{ customer.state }} {{ customer.zipcode }}</div>
+        </div>
+        <div class="vehicle-info">
+            <div class="section-title">Vehicle Information</div>
+            <div class="info-item"><strong>Year:</strong> {{ customer.year }}</div>
+            <div class="info-item"><strong>Make:</strong> {{ customer.make }}</div>
+            <div class="info-item"><strong>Model:</strong> {{ customer.model }}</div>
+            <div class="info-item"><strong>VIN Ending in:</strong> {{ customer.vin_last_8 }}</div>
+            <div class="info-item"><strong>Date Sold:</strong> {{ customer.date_sold }}</div>
+        </div>
+        <div class="details">
+            <div class="section-title">Payment Plan</div>
+            <p><strong>Total Down Payment:</strong> ${{ customer.total_down_payment }}</p>
+            <p><strong>Discount Amount:</strong> ${{ customer.discount_amount }}</p>
+            <p><strong>Payment Frequency:</strong> {{ customer.payment_frequency }}</p>
+            <p><strong>Payment Start Date:</strong> {{ customer.payment_start_date }}</p>
+            <p><strong>Next Payment Due:</strong> {{ customer.next_payment_due }}</p>
+            <p><strong>Total Amount:</strong> ${{ net_amount }}</p>
+            <br>
+            <strong><center>{{ num_payments }} Payments of ${{ payment_per_term }} {{ customer.payment_frequency }}</center></strong>
+        </div>
+    </div>
+    <div class="footer">
+        <br>
+        <p>Car Collection, 4925 West Hwy 74, Monroe, NC 28110, United States</p>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+  <div class="page-break"></div>
+  <br>
+  <p style="margin-left: 75px; margin-right: 50px"><strong>1. THE PARTIES.</strong> For the vehicle value received by {{ customer.first_name }} {{ customer.last_name }} with a mailing address of {{ customer.address }}, {{ customer.city }}, {{ customer.state }} {{ customer.zipcode }}, agrees to pay Car Collection with a mailing address of 4925 West Hwy 74, Monroe, NC 28110.
+    </p>
+  <p style="margin-left: 75px; margin-right: 50px"><strong> 2. PAYMENT.</strong>  This agreement, shall be due and payable, on a {{ customer.payment_frequency }} basis. A {{ customer.payment_frequency }}  payment of ${{ payment_per_term }} shall be made by the Purchaser beginning on {{ customer.payment_start_date }} and to be paid on or before the due date of every {{ customer.payment_frequency }} until the Balance is paid, ending on [DUE DATE].
+    </p>
+  <p style="margin-left: 75px; margin-right: 50px"><strong> 3. PREPAYMENT.</strong>  The Purchaser has the right to pay back the loan in-full or make additional payments at any time without penalty.
+  </p>
+  <p style="margin-left: 75px; margin-right: 50px"><strong> 4. EXPENSES.</strong> In the event any payment under this Note is not paid when due, the Borrower agrees to pay, in addition to the principal and interest hereunder, reasonable attorneys' fees not exceeding a sum equal to the maximum usury rate as permitted under state law, of the then outstanding balance owing on the Note, plus all other reasonable expenses incurred by Lender in exercising any of its rights and remedies upon default.
+  </p>
+  <br>
+  <p style="margin-left: 75px; margin-right: 50px"><strong>
+    Purchaser Signature: ____________________________________________________
+   <br>
+   </p> 
+   <p style="text-align: right; margin-right: 50px"><strong>Date: _____________________</strong>
+    </p>
+    <br>
+  <p style="margin-left: 75px; margin-right: 50px"><strong>
+    Dealer Signature:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;____________________________________________________
+   <br>
+   </p> 
+   <p style="text-align: right; margin-right: 50px"><strong>Date: _____________________</strong>
+    </p>
+</body>
+</html>

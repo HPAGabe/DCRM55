@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header"><strong>
+    {{ customer_record.first_name }} 
+    {{ customer_record.last_name }}</strong>
+  </div>
+  <div class="card-body">
+    <h2>Customer Information</h2>
+    <p class="card-text"><strong>Email: </strong>{{ customer_record.email }}</p>
+    <p class="card-text"><strong>Phone: </strong>{{ customer_record.phone }}</p>
+    <p class="card-text"><strong>Address: </strong>{{ customer_record.address }}</p>
+    <p class="card-text"><strong>City: </strong>{{ customer_record.city }}</p>
+    <p class="card-text"><strong>State: </strong>{{ customer_record.state }}</p>
+    <p class="card-text"><strong>Zipcode: </strong>{{ customer_record.zipcode }}</p>
+    <p class="card-text"><strong>Created At: </strong>{{ customer_record.created_at }}</p>
+<hr>
+    <h2>Vehicle Information</h2>
+    <p class="card-text"><strong>Year: </strong>{{ customer_record.year }}</p>
+    <p class="card-text"><strong>Make: </strong>{{ customer_record.make }}</p>
+    <p class="card-text"><strong>Model: </strong>{{ customer_record.model }}</p>
+    <p class="card-text"><strong>Last 8 of VIN: </strong>{{ customer_record.vin_last_8 }}</p>
+    <p class="card-text"><strong>Date Sold: </strong>{{ customer_record.date_sold }}</p>
+<hr>
+    <h2>Payments</h2>
+    <div class="card">
+        <div class="card-header">
+            <strong>Schedule {{ forloop.counter }}</strong>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><strong>Total Down Payment: </strong>${{ customer_record.total_down_payment }}</p>
+            <p class="card-text"><strong>Discount Amount: </strong>${{ customer_record.discount_amount }}</p>
+            <p class="card-text"><strong>Customer Paid: </strong>${{ customer_record.customer_paid }}</p>
+            <p class="card-text"><strong>Payment Frequency: </strong>{{ customer_record.payment_frequency }}</p>
+            <p class="card-text"><strong>Payment Start Date: </strong>{{ customer_record.payment_start_date }}</p>
+            <p class="card-text"><strong>Next Payment Due: </strong>{{ customer_record.next_payment_due }}</p>
+    
+    <p><strong><u>Payment Calculation</u></strong>
+    <br>
+        <span id="payment-calculation"><
+            <!-- The calculation will be done via JavaScript similar to the add_record.html -->
+        </span>
+    </p>
+<hr>
+    <h2>Payment Schedule</h2>
+<div>
+    <a href="{% url 'add_schedule' %}">
+        <button type="button">Add New Schedule</button>
+    </a>
+    <a href="{% url 'view_schedules' customer.id %}">
+        <button type="button">View Schedules</button>
+    </a>
+</div>
+    <ul id="payment-schedule" class="list-group"></ul>
+  </div>
+</div>
+
+<br/><br/>
+<a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+<a href="{% url 'delete_record' customer_record.id %}" class="btn btn-danger">Delete</a>
+<a href="{% url 'update_record' customer_record.id %}" class="btn btn-secondary">Update Record</a>
+    <a href="{% url 'generate_agreement_pdf_view' customer_record.id %}" class="btn btn-primary">Print Agreement</a>
+</div>
+<br>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const MAX_WEEKLY_PAYMENTS = 20;
+    const MAX_BIWEEKLY_PAYMENTS = 10;
+    const MAX_MONTHLY_PAYMENTS = 5;   
+     
+    const totalDownPayment = {{ customer_record.total_down_payment|default:0 }};
+    const discountAmount = {{ customer_record.discount_amount|default:0 }};
+    const paymentFrequency = "{{ customer_record.payment_frequency }}";
+    const paymentStartDate = new Date("{{ customer_record.payment_start_date }}");
+    const paymentCalculationOutput = document.getElementById('payment-calculation');
+    const paymentScheduleOutput = document.getElementById('payment-schedule');
+
+    function calculatePayment() {
+        const netAmount = totalDownPayment - discountAmount;
+        
+        let paymentPerTerm = 0;
+        let numPayments = 0;
+        let paymentText = "";
+        let nextPaymentDate = new Date(paymentStartDate);
+
+        switch (paymentFrequency) {
+            case 'Weekly':
+                numPayments = Math.min(20, MAX_WEEKLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Weekly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setDate(nextPaymentDate.getDate() + 7);
+                }
+                break;
+            case 'Bi-Weekly':
+                numPayments = Math.min(10, MAX_BIWEEKLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Bi-Weekly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setDate(nextPaymentDate.getDate() + 14);
+                }
+                break;
+            case 'Monthly':
+                numPayments = Math.min(5, MAX_MONTHLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Monthly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+                }
+                break;
+            default:
+                paymentText = "";
+        }
+
+        // Display the payment calculation summary
+        paymentCalculationOutput.innerHTML = `<strong>Total Amount Due:</strong> <u>$${netAmount.toFixed(2)}</u><br><u>${numPayments}</u> <strong>Payments of</strong> <u>$${paymentPerTerm.toFixed(2)} ${paymentText}</u>`;
+
+        // Generate the payment schedule
+        paymentScheduleOutput.innerHTML = "";
+        let currentPaymentDate = new Date(paymentStartDate);
+        for (let i = 0; i < numPayments; i++) {
+            const paymentItem = document.createElement('li');
+            paymentItem.className = 'list-group-item';
+            paymentItem.textContent = `Payment ${i + 1}: ${currentPaymentDate.toISOString().split('T')[0]} - $${paymentPerTerm.toFixed(2)}`;
+            paymentScheduleOutput.appendChild(paymentItem);
+
+            switch (paymentFrequency) {
+                case 'Weekly':
+                    currentPaymentDate.setDate(currentPaymentDate.getDate() + 7);
+                    break;
+                case 'Bi-Weekly':
+                    currentPaymentDate.setDate(currentPaymentDate.getDate() + 14);
+                    break;
+                case 'Monthly':
+                    currentPaymentDate.setMonth(currentPaymentDate.getMonth() + 1);
+                    break;
+            }
+        }
+    }
+
+    // Initial calculation
+    calculatePayment();
+});
+</script>
+{% endblock %}

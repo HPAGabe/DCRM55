@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-md-8 offset-md-2">
+    <h1>Add Payment Schedule</h1>
+    <br/>
+    <form method="POST" action="{% url 'add_payment_schedule' customer_record.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.total_down_payment.label_tag }}
+            {{ form.total_down_payment }}
+        </div>
+        <div class="form-group">
+            {{ form.customer_paid.label_tag }}
+            {{ form.customer_paid }}
+        </div>
+        <div class="form-group">
+            {{ form.discount_amount.label_tag }}
+            {{ form.discount_amount }}
+        </div>
+        <div class="form-group">
+            {{ form.payment_frequency.label_tag }}
+            {{ form.payment_frequency }}
+        </div>
+        <div class="form-group">
+            {{ form.payment_start_date.label_tag }}
+            {{ form.payment_start_date }}
+        </div>
+        <div class="form-group">
+            {{ form.next_payment_due.label_tag }}
+            {{ form.next_payment_due }}
+        </div>
+        <div class="form-group">
+            {{ form.num_payments.label_tag }}
+            {{ form.num_payments }}
+        </div>
+        <button type="submit" class="btn btn-primary">Add Payment Schedule</button>
+    </form>
+    <br>
+    <a href="{% url 'customer_record' customer_record.id %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

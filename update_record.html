@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="col-md-8 offset-md-">
+    <h1>Update Record</h1>
+    
+        <br>
+    <form method="POST" action="{% url 'update_record' customer_record.id %}" id="update-record-form">
+        {% csrf_token %}
+        <hr>
+        <br>
+        <h2>Customer Information</h2>
+        <br>
+        <div class="form-group">
+            <label for="id_first_name"><strong>First Name</strong></label>
+            {{ form.first_name }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_last_name"><strong>Last Name</strong></label>
+            {{ form.last_name }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_email"><strong>Email Address</strong></label>
+            {{ form.email }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_phone"><strong>Phone Number</strong></label>
+            {{ form.phone }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_address"><strong>Street Address</strong></label>
+            {{ form.address }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_city"><strong>City</strong></label>
+            {{ form.city }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_state"><strong>State</strong></label>
+            {{ form.state }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_zipcode"><strong>Zipcode</strong></label>
+            {{ form.zipcode }}
+        </div>
+        <br>
+        <hr>
+        <h2>Vehicle Information</h2>
+        <div class="form-group">
+            <label for="id_year"><strong>Year</strong></label>
+            {{ form.year }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_make"><strong>Make</strong></label>
+            {{ form.make }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_model"><strong>Model</strong></label>
+            {{ form.model }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_vin_last_8"><strong>Last 8 of VIN#</strong></label>
+            {{ form.vin_last_8 }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_date_sold"><strong>Date Sold</strong></label>
+            {{ form.date_sold }}
+        </div>
+        <br>
+        <hr>
+        <h2>Payments</h2>
+        <br>
+        <div class="form-group">
+            <label for="id_total_down_payment"><strong>Down Payment</strong></label>
+            {{ form.total_down_payment }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_customer_paid"><strong>Customer Paid</strong></label>
+            {{ form.customer_paid }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_discount_amount"><strong>Discount</strong></label>
+            {{ form.discount_amount }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="pickup-payment"><strong>Pickup Payment:</strong></label>
+            <p id="pickup-payment" class="form-control-plaintext"></p>
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="payment_frequency"><strong>Payment Frequency:</strong></label>
+            {{ form.payment_frequency.label_tag }}
+            {{ form.payment_frequency }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_payment_start_date"><strong>Payment Start Date</strong></label>
+            {{ form.payment_start_date }}
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_next_payment_due"><strong>Next Payment Due</strong></label>
+            {{ form.next_payment_due }}
+        </div>
+        <br>
+        <hr>
+        <div class="form-group">
+            <h3>Payment Calculation</h3>
+            <p id="payment-calculation" class="form-control-plaintext"></p>
+        </div>
+        <hr>
+        <div class="form-group">
+            <h3>Payment Schedule</h3>
+            <ul id="payment-schedule" class="list-group"></ul>
+        </div>
+        <br/>
+        <hr>
+        <button type="submit" class="btn btn-secondary">Update Record</button>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+    </form>
+    <br>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const MAX_WEEKLY_PAYMENTS = 20;
+    const MAX_BIWEEKLY_PAYMENTS = 10;
+    const MAX_MONTHLY_PAYMENTS = 5;
+
+    const totalDownPaymentInput = document.getElementById('id_total_down_payment');
+    const discountAmountInput = document.getElementById('id_discount_amount');
+    const customerPaidInput = document.getElementById('id_customer_paid');
+    const paymentFrequencyInput = document.getElementById('id_payment_frequency');
+    const paymentStartDateInput = document.getElementById('id_payment_start_date');
+    const nextPaymentDueInput = document.getElementById('id_next_payment_due');
+    const paymentCalculationOutput = document.getElementById('payment-calculation');
+    const paymentScheduleOutput = document.getElementById('payment-schedule');
+    const pickupPaymentOutput = document.getElementById('pickup-payment');
+
+    function calculatePayment() {
+        const totalDownPayment = parseFloat(totalDownPaymentInput.value) || 0;
+        const discountAmount = parseFloat(discountAmountInput.value) || 0;
+        const customerPaid = parseFloat(customerPaidInput.value) || 0;
+        const paymentFrequency = paymentFrequencyInput.value;
+        const paymentStartDateValue = paymentStartDateInput.value;
+        const netAmount = totalDownPayment - discountAmount - customerPaid;
+        
+        let paymentPerTerm = 0;
+        let numPayments = 0;
+        let paymentText = "";
+        let nextPaymentDate = paymentStartDateValue ? new Date(paymentStartDateValue) : null;
+
+        switch (paymentFrequency) {
+            case 'Weekly':
+                numPayments = Math.min(20, MAX_WEEKLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Weekly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setDate(nextPaymentDate.getDate() + 7);
+                }
+                break;
+            case 'Bi-Weekly':
+                numPayments = Math.min(10, MAX_BIWEEKLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Bi-Weekly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setDate(nextPaymentDate.getDate() + 14);
+                }
+                break;
+            case 'Monthly':
+                numPayments = Math.min(5, MAX_MONTHLY_PAYMENTS);
+                paymentPerTerm = netAmount / numPayments;
+                paymentText = "Monthly";
+                if (nextPaymentDate) {
+                    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+                }
+                break;
+            default:
+                paymentText = "";
+        }
+
+        // Update the next payment due date field
+        if (nextPaymentDate) {
+            nextPaymentDueInput.value = nextPaymentDate.toISOString().split('T')[0];
+        }
+
+        // Display the payment calculation summary
+        paymentCalculationOutput.innerHTML = `<strong>Total Amount Due:</strong> <u>$${netAmount.toFixed(2)}</u><br><u>${numPayments}</u> <strong>Payments of</strong> <u>$${paymentPerTerm.toFixed(2)} ${paymentText}</u>`;
+
+        // Generate the payment schedule
+        paymentScheduleOutput.innerHTML = "";
+        if (nextPaymentDate) {
+            let currentPaymentDate = new Date(paymentStartDateValue);
+            for (let i = 0; i < numPayments; i++) {
+                const paymentItem = document.createElement('li');
+                paymentItem.className = 'list-group-item';
+                paymentItem.textContent = `Payment ${i + 1}: ${currentPaymentDate.toISOString().split('T')[0]} - $${paymentPerTerm.toFixed(2)}`;
+                paymentScheduleOutput.appendChild(paymentItem);
+
+                switch (paymentFrequency) {
+                    case 'Weekly':
+                        currentPaymentDate.setDate(currentPaymentDate.getDate() + 7);
+                        break;
+                    case 'Bi-Weekly':
+                        currentPaymentDate.setDate(currentPaymentDate.getDate() + 14);
+                        break;
+                    case 'Monthly':
+                        currentPaymentDate.setMonth(currentPaymentDate.getMonth() + 1);
+                        break;
+                }
+            }
+        }
+
+        // Update the Pickup Payment box
+        pickupPaymentOutput.textContent = `$${netAmount.toFixed(2)}`;
+    }
+
+    totalDownPaymentInput.addEventListener('input', calculatePayment);
+    discountAmountInput.addEventListener('input', calculatePayment);
+    customerPaidInput.addEventListener('input', calculatePayment);
+    paymentFrequencyInput.addEventListener('change', calculatePayment);
+    paymentStartDateInput.addEventListener('change', calculatePayment);
+
+    // Initial calculation
+    calculatePayment();
+});
+</script>
+
+{% endblock %}

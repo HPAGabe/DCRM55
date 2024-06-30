@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Adjust Payment Schedule</h2>
+<p>Currently adjusting schedule for {{ schedule.customer.first_name }} {{ schedule.customer.last_name }}</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update Schedule</button>
+</form>
+{% endblock %}

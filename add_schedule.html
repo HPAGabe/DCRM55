@@ -1,0 +1,12 @@
+<!-- Template: add_schedule.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Add Payment Schedule for Customer</h2>
+<!-- Assuming 'customer_record' is the context variable containing the customer's data -->
+<form method="post" action="{% url 'add_schedule' customer_record.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+        <button type="submit" class="btn btn-secondary">Update Record</button>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Back</a></form>
+
+{% endblock %}
